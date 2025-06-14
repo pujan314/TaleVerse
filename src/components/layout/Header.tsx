@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { BookOpen, Menu, Moon, Sun, Search, LogOut, User, Settings } from 'lucide-react';
+import { BookOpen, Menu, Moon, Sun, Search, LogOut, User, Settings, Database } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 import ConnectWalletButton from '../web3/ConnectWalletButton';
 import NotificationDropdown from '../notifications/NotificationDropdown';
@@ -16,6 +16,14 @@ const Header = ({ toggleSidebar, darkMode, toggleDarkMode }: HeaderProps) => {
   const [showDropdown, setShowDropdown] = useState(false);
   const navigate = useNavigate();
 
+  // Check if database is connected
+  const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+  const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
+  const isDatabaseConnected = supabaseUrl && supabaseKey && 
+    supabaseUrl !== 'your_supabase_project_url' && 
+    supabaseKey !== 'your_supabase_anon_key' &&
+    !supabaseUrl.includes('placeholder');
+
   const handleLogout = async () => {
     await logout();
     setShowDropdown(false);
@@ -27,7 +35,8 @@ const Header = ({ toggleSidebar, darkMode, toggleDarkMode }: HeaderProps) => {
     isLoggedIn, 
     user: user?.email, 
     isLoading,
-    userTokens: user?.tokens 
+    userTokens: user?.tokens,
+    isDatabaseConnected
   });
 
   return (
@@ -48,6 +57,14 @@ const Header = ({ toggleSidebar, darkMode, toggleDarkMode }: HeaderProps) => {
                 Taleverse
               </span>
             </Link>
+
+            {/* Database Status Indicator */}
+            {!isDatabaseConnected && (
+              <div className="hidden md:flex items-center ml-4 px-2 py-1 bg-blue-100 dark:bg-blue-900/30 rounded-full">
+                <Database className="h-4 w-4 text-blue-600 mr-1" />
+                <span className="text-xs text-blue-700 dark:text-blue-300">Demo Mode</span>
+              </div>
+            )}
           </div>
           
           <div className="hidden sm:flex items-center flex-1 max-w-lg mx-auto">
