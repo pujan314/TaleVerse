@@ -16,7 +16,7 @@ const Sidebar = ({ open }: SidebarProps) => {
     { name: 'Home', href: '/', icon: Home },
     { name: 'Discover', href: '/discover', icon: BookOpen },
     { name: 'Publish', href: '/publish', icon: PenTool, requireAuth: true },
-    { name: 'Library', href: '/library', icon: BookMarked, requireAuth: true },
+    
     { name: 'Community', href: '/community', icon: Users },
     { name: 'Leaderboard', href: '/leaderboard', icon: Trophy },
     { name: 'Messages', href: '/messages', icon: MessageSquare, requireAuth: true },
