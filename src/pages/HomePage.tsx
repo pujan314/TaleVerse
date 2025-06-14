@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { BookOpen, Award, Users, Coins, TrendingUp, Star } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';

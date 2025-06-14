@@ -14,8 +14,6 @@ const NotFoundPage = lazy(() => import('../pages/NotFoundPage'));
 const MessagesPage = lazy(() => import('../pages/MessagesPage'));
 const NotificationsPage = lazy(() => import('../pages/NotificationsPage'));
 const Web3DashboardPage = lazy(() => import('../pages/Web3DashboardPage'));
-const LibraryPage = lazy(() => import('../pages/LibraryPage'));
-const LeaderboardPage = lazy(() => import('../pages/LeaderboardPage'));
 const LoginForm = lazy(() => import('../components/auth/LoginForm'));
 const SignupForm = lazy(() => import('../components/auth/SignupForm'));
 
@@ -42,10 +40,8 @@ const AppRoutes = () => {
         <Route path="/novel/:id" element={<NovelPage />} />
         <Route path="/novel/:id/quiz" element={<QuizPage />} />
         <Route path="/community" element={<CommunityPage />} />
-        <Route path="/leaderboard" element={<LeaderboardPage />} />
         <Route path="/login" element={<LoginForm />} />
         <Route path="/signup" element={<SignupForm />} />
-        <Route path="/library" element={<ProtectedRoute><LibraryPage /></ProtectedRoute>} />
         <Route path="/messages" element={<ProtectedRoute><MessagesPage /></ProtectedRoute>} />
         <Route path="/notifications" element={<ProtectedRoute><NotificationsPage /></ProtectedRoute>} />
         <Route path="/profile" element={<ProtectedRoute><ProfilePage /></ProtectedRoute>} />
