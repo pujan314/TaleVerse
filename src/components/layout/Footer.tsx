@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { BookOpen, Github, Twitter, Instagram, Facebook, Youtube, Linkedin, MessageCircle } from 'lucide-react';
+import { BookOpen, Github, Twitter, Instagram, Facebook, Youtube, Linkedin, MessageCircle, Zap } from 'lucide-react';
 
 const Footer = () => {
   const socialLinks = [
@@ -155,9 +155,24 @@ const Footer = () => {
         
         <div className="mt-8 pt-8 border-t border-[var(--border-color)]">
           <div className="flex flex-col md:flex-row justify-between items-center">
-            <p className="text-sm text-[var(--text-secondary)]">
-              &copy; {new Date().getFullYear()} Taleverse. All rights reserved.
-            </p>
+            <div className="flex flex-col md:flex-row items-center space-y-2 md:space-y-0 md:space-x-4">
+              <p className="text-sm text-[var(--text-secondary)]">
+                &copy; {new Date().getFullYear()} Taleverse. All rights reserved.
+              </p>
+              
+              {/* Built on Bolt Badge */}
+              <a
+                href="https://bolt.new"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center space-x-2 px-3 py-1.5 bg-gradient-to-r from-purple-500 to-blue-600 text-white text-xs font-medium rounded-full hover:from-purple-600 hover:to-blue-700 transition-all duration-200 hover:scale-105 hover:shadow-lg"
+                title="Built on Bolt"
+              >
+                <Zap className="h-3 w-3" />
+                <span>Built on Bolt</span>
+              </a>
+            </div>
+            
             <div className="flex items-center space-x-4 mt-4 md:mt-0">
               <p className="text-sm text-[var(--text-secondary)]">
                 Powered by decentralized technology
