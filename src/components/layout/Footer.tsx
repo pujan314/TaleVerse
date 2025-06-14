@@ -165,10 +165,10 @@ const Footer = () => {
                 href="https://bolt.new"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex items-center space-x-2 px-3 py-1.5 bg-gradient-to-r from-purple-500 to-blue-600 text-white text-xs font-medium rounded-full hover:from-purple-600 hover:to-blue-700 transition-all duration-200 hover:scale-105 hover:shadow-lg"
-                title="Built on Bolt"
+                className="inline-flex items-center space-x-2 px-4 py-2 bg-gradient-to-r from-purple-600 via-blue-600 to-indigo-600 text-white text-sm font-medium rounded-full hover:from-purple-700 hover:via-blue-700 hover:to-indigo-700 transition-all duration-300 hover:scale-105 hover:shadow-lg transform"
+                title="Built on Bolt - AI-powered full-stack web development"
               >
-                <Zap className="h-3 w-3" />
+                <Zap className="h-4 w-4" />
                 <span>Built on Bolt</span>
               </a>
             </div>
