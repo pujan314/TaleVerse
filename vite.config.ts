@@ -12,4 +12,17 @@ export default defineConfig({
       'Cross-Origin-Opener-Policy': 'unsafe-none',
     },
   },
+  build: {
+    outDir: 'dist',
+    sourcemap: false,
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          vendor: ['react', 'react-dom'],
+          router: ['react-router-dom'],
+          ui: ['lucide-react', 'framer-motion'],
+        },
+      },
+    },
+  },
 });
