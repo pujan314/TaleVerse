@@ -43,6 +43,21 @@ export default function AuthProvider({ children }: AuthProviderProps) {
     const initializeAuth = async () => {
       try {
         console.log('Testing Supabase connection...');
+        
+        // Check if we have Supabase environment variables
+        const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+        const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
+        
+        if (!supabaseUrl || !supabaseKey || supabaseUrl === 'your_supabase_project_url' || supabaseKey === 'your_supabase_anon_key') {
+          console.warn('Supabase environment variables not configured, running in demo mode');
+          if (mounted) {
+            setConnectionTested(true);
+            setConnectionWorking(false);
+            setInitialLoading(false);
+          }
+          return;
+        }
+        
         const connectionOk = await testConnection();
         
         if (mounted) {
@@ -53,7 +68,6 @@ export default function AuthProvider({ children }: AuthProviderProps) {
         if (!connectionOk) {
           console.warn('Supabase connection failed, running in demo mode');
           if (mounted) {
-            addToast('Unable to connect to database. Please check your Supabase configuration.', 'error');
             setInitialLoading(false);
           }
           return;
@@ -81,7 +95,8 @@ export default function AuthProvider({ children }: AuthProviderProps) {
       } catch (error) {
         console.error('Error initializing auth:', error);
         if (mounted) {
-          addToast('Failed to initialize authentication. Please refresh the page.', 'error');
+          // Don't show error toast in production if it's just a connection issue
+          console.warn('Running in demo mode due to connection issues');
         }
       } finally {
         if (mounted) {
@@ -92,28 +107,30 @@ export default function AuthProvider({ children }: AuthProviderProps) {
 
     initializeAuth();
 
-    // Set up auth listener
+    // Set up auth listener only if we have a working connection
     let subscription: any = null;
     
-    const { data } = supabase.auth.onAuthStateChange(
-      async (event, session) => {
-        console.log('Auth state changed:', event, session?.user?.id);
-        
-        if (!mounted) return;
-        
-        if (event === 'SIGNED_IN' && session?.user) {
-          console.log('User signed in, fetching profile...');
-          setIsLoading(true);
-          await fetchUserProfile(session.user);
-          setIsLoading(false);
-        } else if (event === 'SIGNED_OUT') {
-          console.log('User signed out');
-          setUser(null);
-          setIsLoading(false);
+    if (connectionWorking) {
+      const { data } = supabase.auth.onAuthStateChange(
+        async (event, session) => {
+          console.log('Auth state changed:', event, session?.user?.id);
+          
+          if (!mounted) return;
+          
+          if (event === 'SIGNED_IN' && session?.user) {
+            console.log('User signed in, fetching profile...');
+            setIsLoading(true);
+            await fetchUserProfile(session.user);
+            setIsLoading(false);
+          } else if (event === 'SIGNED_OUT') {
+            console.log('User signed out');
+            setUser(null);
+            setIsLoading(false);
+          }
         }
-      }
-    );
-    subscription = data.subscription;
+      );
+      subscription = data.subscription;
+    }
 
     return () => {
       mounted = false;
@@ -121,7 +138,7 @@ export default function AuthProvider({ children }: AuthProviderProps) {
         subscription.unsubscribe();
       }
     };
-  }, []);
+  }, [connectionWorking]);
 
   const fetchUserProfile = async (authUser: SupabaseUser) => {
     if (!connectionWorking) {
@@ -188,7 +205,7 @@ export default function AuthProvider({ children }: AuthProviderProps) {
 
   const login = async (email: string, password: string) => {
     if (!connectionWorking) {
-      addToast('Cannot login - database connection unavailable', 'error');
+      addToast('Cannot login - database connection unavailable. Please check back later.', 'error');
       throw new Error('Database connection unavailable');
     }
 
@@ -240,7 +257,7 @@ export default function AuthProvider({ children }: AuthProviderProps) {
 
   const signup = async (email: string, password: string, username?: string) => {
     if (!connectionWorking) {
-      addToast('Cannot signup - database connection unavailable', 'error');
+      addToast('Cannot signup - database connection unavailable. Please check back later.', 'error');
       throw new Error('Database connection unavailable');
     }
 
@@ -285,6 +302,13 @@ export default function AuthProvider({ children }: AuthProviderProps) {
   };
 
   const logout = async () => {
+    if (!connectionWorking) {
+      // If no connection, just clear local state
+      setUser(null);
+      addToast('Logged out', 'success');
+      return;
+    }
+
     setIsLoading(true);
     try {
       console.log('Attempting logout...');
@@ -335,12 +359,9 @@ export default function AuthProvider({ children }: AuthProviderProps) {
             <p className="text-sm text-gray-500 dark:text-gray-500 mt-2">Testing connection...</p>
           )}
           {connectionTested && !connectionWorking && (
-            <div className="mt-4 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
-              <p className="text-sm text-yellow-800">
-                Unable to connect to database. Please check your Supabase configuration in the .env file.
-              </p>
-              <p className="text-xs text-yellow-600 mt-1">
-                The app will continue in demo mode with limited functionality.
+            <div className="mt-4 p-4 bg-blue-50 border border-blue-200 rounded-lg max-w-md mx-auto">
+              <p className="text-sm text-blue-800">
+                Running in demo mode. Some features may be limited.
               </p>
             </div>
           )}

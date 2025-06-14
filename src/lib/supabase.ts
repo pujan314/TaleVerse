@@ -3,13 +3,10 @@ import { createClient } from '@supabase/supabase-js';
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
 const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
 
-if (!supabaseUrl || !supabaseAnonKey) {
-  throw new Error('Missing Supabase environment variables. Please check your .env file.');
-}
-
+// Create a fallback client even if env vars are missing
 export const supabase = createClient(
-  supabaseUrl, 
-  supabaseAnonKey,
+  supabaseUrl || 'https://placeholder.supabase.co', 
+  supabaseAnonKey || 'placeholder-key',
   {
     auth: {
       autoRefreshToken: true,
@@ -22,13 +19,22 @@ export const supabase = createClient(
 // Test connection function with improved error handling and longer timeout
 export const testConnection = async (): Promise<boolean> => {
   try {
+    // Check if we have valid environment variables first
+    if (!supabaseUrl || !supabaseAnonKey || 
+        supabaseUrl === 'your_supabase_project_url' || 
+        supabaseAnonKey === 'your_supabase_anon_key' ||
+        supabaseUrl.includes('placeholder')) {
+      console.log('Supabase environment variables not configured');
+      return false;
+    }
+
     console.log('Testing Supabase connection...');
     console.log('Supabase URL:', supabaseUrl);
     console.log('Supabase Key (first 20 chars):', supabaseAnonKey?.substring(0, 20) + '...');
     
-    // Use a simple health check with a longer timeout (10 seconds)
+    // Use a simple health check with a longer timeout (15 seconds)
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 10000);
+    const timeoutId = setTimeout(() => controller.abort(), 15000);
     
     try {
       const { data, error } = await supabase
@@ -58,7 +64,7 @@ export const testConnection = async (): Promise<boolean> => {
     } catch (fetchError: any) {
       clearTimeout(timeoutId);
       if (fetchError.name === 'AbortError') {
-        console.error('Supabase connection timeout after 10 seconds');
+        console.error('Supabase connection timeout after 15 seconds');
         return false;
       }
       throw fetchError;

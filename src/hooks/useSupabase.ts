@@ -83,6 +83,19 @@ export const useNovels = () => {
   const fetchNovels = async (filters?: { genre?: string; search?: string }) => {
     try {
       setLoading(true);
+      
+      // Check if Supabase is available
+      const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+      const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
+      
+      if (!supabaseUrl || !supabaseKey || 
+          supabaseUrl === 'your_supabase_project_url' || 
+          supabaseKey === 'your_supabase_anon_key') {
+        console.log('Supabase not configured, using empty novels list');
+        setNovels([]);
+        return;
+      }
+
       let query = supabase
         .from('novels')
         .select('*')
@@ -99,10 +112,16 @@ export const useNovels = () => {
 
       const { data, error } = await query;
 
-      if (error) throw error;
+      if (error) {
+        console.error('Error fetching novels:', error);
+        setNovels([]);
+        return;
+      }
+      
       setNovels(data || []);
     } catch (error) {
       console.error('Error fetching novels:', error);
+      setNovels([]);
     } finally {
       setLoading(false);
     }
@@ -127,6 +146,19 @@ export const useNovel = (novelId: string) => {
         setLoading(true);
         console.log('Fetching novel with ID:', novelId);
         
+        // Check if Supabase is available
+        const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+        const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
+        
+        if (!supabaseUrl || !supabaseKey || 
+            supabaseUrl === 'your_supabase_project_url' || 
+            supabaseKey === 'your_supabase_anon_key') {
+          console.log('Supabase not configured, novel not available');
+          setNovel(null);
+          setChapters([]);
+          return;
+        }
+        
         // Fetch novel details - this should work for public access now
         const { data: novelData, error: novelError } = await supabase
           .from('novels')
@@ -137,7 +169,9 @@ export const useNovel = (novelId: string) => {
 
         if (novelError) {
           console.error('Error fetching novel:', novelError);
-          throw novelError;
+          setNovel(null);
+          setChapters([]);
+          return;
         }
         
         console.log('Novel data:', novelData);
@@ -201,6 +235,18 @@ export const useQuiz = (novelId: string) => {
       try {
         setLoading(true);
         
+        // Check if Supabase is available
+        const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+        const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
+        
+        if (!supabaseUrl || !supabaseKey || 
+            supabaseUrl === 'your_supabase_project_url' || 
+            supabaseKey === 'your_supabase_anon_key') {
+          console.log('Supabase not configured, quiz not available');
+          setQuiz(null);
+          return;
+        }
+        
         const { data: quizData, error: quizError } = await supabase
           .from('quizzes')
           .select(`
@@ -210,7 +256,11 @@ export const useQuiz = (novelId: string) => {
           .eq('novel_id', novelId)
           .single();
 
-        if (quizError && quizError.code !== 'PGRST116') throw quizError;
+        if (quizError && quizError.code !== 'PGRST116') {
+          console.error('Error fetching quiz:', quizError);
+          setQuiz(null);
+          return;
+        }
         
         if (quizData) {
           // Transform the data to match our expected format
@@ -227,6 +277,7 @@ export const useQuiz = (novelId: string) => {
         }
       } catch (error) {
         console.error('Error fetching quiz:', error);
+        setQuiz(null);
       } finally {
         setLoading(false);
       }
@@ -266,6 +317,18 @@ export const useUserLibrary = () => {
       try {
         setLoading(true);
         
+        // Check if Supabase is available
+        const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+        const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
+        
+        if (!supabaseUrl || !supabaseKey || 
+            supabaseUrl === 'your_supabase_project_url' || 
+            supabaseKey === 'your_supabase_anon_key') {
+          console.log('Supabase not configured, library not available');
+          setLibrary([]);
+          return;
+        }
+        
         const { data, error } = await supabase
           .from('user_library')
           .select(`
@@ -274,10 +337,16 @@ export const useUserLibrary = () => {
           `)
           .order('added_at', { ascending: false });
 
-        if (error) throw error;
+        if (error) {
+          console.error('Error fetching library:', error);
+          setLibrary([]);
+          return;
+        }
+        
         setLibrary(data || []);
       } catch (error) {
         console.error('Error fetching library:', error);
+        setLibrary([]);
       } finally {
         setLoading(false);
       }

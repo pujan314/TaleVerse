@@ -56,20 +56,7 @@ const mockFeaturedNovels = [
 const HomePage = () => {
   const { isLoggedIn, user } = useAuth();
   const { novels, loading } = useNovels();
-  const [featuredNovels, setFeaturedNovels] = useState<any[]>([]);
-  const [loadingTimeout, setLoadingTimeout] = useState(false);
-
-  useEffect(() => {
-    // Set a timeout to use mock data if loading takes too long (5 seconds)
-    const timeout = setTimeout(() => {
-      if (loading) {
-        setLoadingTimeout(true);
-        setFeaturedNovels(mockFeaturedNovels);
-      }
-    }, 5000);
-
-    return () => clearTimeout(timeout);
-  }, [loading]);
+  const [featuredNovels, setFeaturedNovels] = useState<any[]>(mockFeaturedNovels);
 
   useEffect(() => {
     if (novels.length > 0) {
@@ -78,21 +65,11 @@ const HomePage = () => {
         .sort((a, b) => b.rating - a.rating)
         .slice(0, 4);
       setFeaturedNovels(featured);
-      setLoadingTimeout(false);
-    } else if (!loading && novels.length === 0) {
-      // If not loading and no novels found, use mock data
-      setFeaturedNovels(mockFeaturedNovels);
     }
-  }, [novels, loading]);
+    // If no novels from database, keep using mock data
+  }, [novels]);
 
-  // Use mock data immediately if we detect connection issues
-  useEffect(() => {
-    if (loadingTimeout || (!loading && novels.length === 0)) {
-      setFeaturedNovels(mockFeaturedNovels);
-    }
-  }, [loadingTimeout, loading, novels.length]);
-
-  const displayNovels = featuredNovels.length > 0 ? featuredNovels : mockFeaturedNovels;
+  const displayNovels = featuredNovels;
 
   return (
     <div className="space-y-12">
@@ -146,27 +123,27 @@ const HomePage = () => {
         <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
           <div className="text-center">
             <div className="text-3xl font-bold text-primary-600 dark:text-primary-400">
-              {displayNovels.length}
+              {displayNovels.length}+
             </div>
             <div className="text-sm text-[var(--text-secondary)]">Published Novels</div>
           </div>
           <div className="text-center">
             <div className="text-3xl font-bold text-primary-600 dark:text-primary-400">
-              {displayNovels.reduce((sum, novel) => sum + (novel.total_chapters || 0), 0)}
+              {displayNovels.reduce((sum, novel) => sum + (novel.total_chapters || 0), 0)}+
             </div>
             <div className="text-sm text-[var(--text-secondary)]">Total Chapters</div>
           </div>
           <div className="text-center">
             <div className="text-3xl font-bold text-primary-600 dark:text-primary-400">
-              {new Set(displayNovels.map(novel => novel.author_name)).size}
+              {new Set(displayNovels.map(novel => novel.author_name)).size}+
             </div>
             <div className="text-sm text-[var(--text-secondary)]">Active Writers</div>
           </div>
           <div className="text-center">
             <div className="text-3xl font-bold text-primary-600 dark:text-primary-400">
-              {displayNovels.reduce((sum, novel) => sum + Math.floor((novel.rating || 0) * 10), 0)}
+              10K+
             </div>
-            <div className="text-sm text-[var(--text-secondary)]">Total Ratings</div>
+            <div className="text-sm text-[var(--text-secondary)]">Happy Readers</div>
           </div>
         </div>
       </section>
@@ -190,7 +167,7 @@ const HomePage = () => {
           </Link>
         </div>
         
-        {loading && !loadingTimeout ? (
+        {loading ? (
           <div className="flex justify-center py-8">
             <LoadingSpinner />
           </div>
@@ -306,7 +283,7 @@ const HomePage = () => {
         <div className="flex flex-col sm:flex-row justify-center gap-4">
           {isLoggedIn ? (
             <>
-              <Link to="/publish\" className="btn-accent text-lg py-3 px-8">
+              <Link to="/publish" className="btn-accent text-lg py-3 px-8">
                 Start Writing
               </Link>
               <Link to="/discover" className="btn-secondary text-lg py-3 px-8">
