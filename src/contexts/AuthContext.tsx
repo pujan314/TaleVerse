@@ -39,6 +39,7 @@ export default function AuthProvider({ children }: AuthProviderProps) {
   const [initialLoading, setInitialLoading] = useState<boolean>(true);
   const [connectionTested, setConnectionTested] = useState<boolean>(false);
   const [connectionWorking, setConnectionWorking] = useState<boolean>(false);
+  const [isRefreshing, setIsRefreshing] = useState<boolean>(false);
   const { addToast } = useToast();
 
   // Persist user data to localStorage
@@ -74,10 +75,11 @@ export default function AuthProvider({ children }: AuthProviderProps) {
     return null;
   };
 
-  // Refresh authentication state
+  // Refresh authentication state with debouncing
   const refreshAuth = async () => {
-    if (!connectionWorking) return;
+    if (!connectionWorking || isRefreshing) return;
 
+    setIsRefreshing(true);
     try {
       const { data: { session }, error } = await supabase.auth.getSession();
       
@@ -94,12 +96,15 @@ export default function AuthProvider({ children }: AuthProviderProps) {
       }
     } catch (error) {
       console.error('Error in refreshAuth:', error);
+    } finally {
+      setIsRefreshing(false);
     }
   };
 
   useEffect(() => {
     let mounted = true;
     let authSubscription: any = null;
+    let refreshTimeout: NodeJS.Timeout;
 
     // Initialize auth with persistence
     const initializeAuth = async () => {
@@ -111,6 +116,7 @@ export default function AuthProvider({ children }: AuthProviderProps) {
         if (persistedUser && mounted) {
           setUser(persistedUser);
           setIsLoading(false);
+          setInitialLoading(false);
         }
         
         // Check if we have Supabase environment variables
@@ -209,19 +215,25 @@ export default function AuthProvider({ children }: AuthProviderProps) {
 
     initializeAuth();
 
-    // Handle page visibility changes
+    // Handle page visibility changes with debouncing
     const handleVisibilityChange = () => {
-      if (!document.hidden && connectionWorking) {
-        console.log('Page became visible, refreshing auth...');
-        refreshAuth();
+      if (!document.hidden && connectionWorking && !isRefreshing) {
+        console.log('Page became visible, scheduling auth refresh...');
+        clearTimeout(refreshTimeout);
+        refreshTimeout = setTimeout(() => {
+          refreshAuth();
+        }, 500); // Debounce for 500ms
       }
     };
 
-    // Handle focus events
+    // Handle focus events with debouncing
     const handleFocus = () => {
-      if (connectionWorking) {
-        console.log('Window focused, refreshing auth...');
-        refreshAuth();
+      if (connectionWorking && !isRefreshing) {
+        console.log('Window focused, scheduling auth refresh...');
+        clearTimeout(refreshTimeout);
+        refreshTimeout = setTimeout(() => {
+          refreshAuth();
+        }, 500); // Debounce for 500ms
       }
     };
 
@@ -230,13 +242,14 @@ export default function AuthProvider({ children }: AuthProviderProps) {
 
     return () => {
       mounted = false;
+      clearTimeout(refreshTimeout);
       if (authSubscription) {
         authSubscription.unsubscribe();
       }
       document.removeEventListener('visibilitychange', handleVisibilityChange);
       window.removeEventListener('focus', handleFocus);
     };
-  }, [connectionWorking]);
+  }, [connectionWorking, isRefreshing]);
 
   const fetchUserProfile = async (authUser: SupabaseUser) => {
     if (!connectionWorking) {
@@ -443,10 +456,11 @@ export default function AuthProvider({ children }: AuthProviderProps) {
     isLoggedIn, 
     isLoading, 
     initialLoading,
-    connectionWorking 
+    connectionWorking,
+    isRefreshing
   });
 
-  // Show loading spinner only during initial app load
+  // Show loading spinner only during initial app load, not on tab focus
   if (initialLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900">
@@ -472,7 +486,7 @@ export default function AuthProvider({ children }: AuthProviderProps) {
     <AuthContext.Provider value={{ 
       user, 
       isLoggedIn, 
-      isLoading, 
+      isLoading: isLoading && !initialLoading, // Don't show loading on tab focus
       login, 
       signup,
       logout, 

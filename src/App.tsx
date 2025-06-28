@@ -19,8 +19,8 @@ const queryClient = new QueryClient({
         }
         return failureCount < 2;
       },
-      refetchOnWindowFocus: true,
-      refetchOnReconnect: true,
+      refetchOnWindowFocus: false, // Prevent automatic refetch on window focus
+      refetchOnReconnect: false, // Prevent automatic refetch on reconnect
       staleTime: 5 * 60 * 1000, // 5 minutes
       gcTime: 10 * 60 * 1000, // 10 minutes (formerly cacheTime)
     },

@@ -17,7 +17,8 @@ const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
       retry: 1,
-      refetchOnWindowFocus: false,
+      refetchOnWindowFocus: false, // Prevent refetch on window focus
+      refetchOnReconnect: false, // Prevent refetch on reconnect
       staleTime: 30000,
     },
   },
@@ -36,8 +37,12 @@ interface Web3ProviderProps {
 
 export function Web3Provider({ children }: Web3ProviderProps) {
   const [isConnected, setIsConnected] = useState(false);
+  const [isRefreshing, setIsRefreshing] = useState(false);
 
   const reconnect = async () => {
+    if (isRefreshing) return;
+    
+    setIsRefreshing(true);
     try {
       // Attempt to reconnect wallet
       if (typeof window !== 'undefined' && window.ethereum) {
@@ -47,29 +52,40 @@ export function Web3Provider({ children }: Web3ProviderProps) {
     } catch (error) {
       console.warn('Failed to reconnect wallet:', error);
       setIsConnected(false);
+    } finally {
+      setIsRefreshing(false);
     }
   };
 
   useEffect(() => {
-    // Handle page visibility changes for Web3
+    let refreshTimeout: NodeJS.Timeout;
+
+    // Handle page visibility changes with debouncing
     const handleVisibilityChange = () => {
-      if (!document.hidden) {
-        // Page became visible, check wallet connection
-        if (typeof window !== 'undefined' && window.ethereum) {
-          window.ethereum.request({ method: 'eth_accounts' })
-            .then((accounts: string[]) => {
-              setIsConnected(accounts.length > 0);
-            })
-            .catch(() => {
-              setIsConnected(false);
-            });
-        }
+      if (!document.hidden && !isRefreshing) {
+        // Page became visible, check wallet connection with delay
+        clearTimeout(refreshTimeout);
+        refreshTimeout = setTimeout(() => {
+          if (typeof window !== 'undefined' && window.ethereum) {
+            window.ethereum.request({ method: 'eth_accounts' })
+              .then((accounts: string[]) => {
+                setIsConnected(accounts.length > 0);
+              })
+              .catch(() => {
+                setIsConnected(false);
+              });
+          }
+        }, 1000); // Delay to prevent immediate refresh
       }
     };
 
     document.addEventListener('visibilitychange', handleVisibilityChange);
-    return () => document.removeEventListener('visibilitychange', handleVisibilityChange);
-  }, []);
+    
+    return () => {
+      clearTimeout(refreshTimeout);
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+    };
+  }, [isRefreshing]);
 
   return (
     <WagmiProvider config={config}>
