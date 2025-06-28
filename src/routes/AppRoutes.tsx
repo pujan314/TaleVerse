@@ -1,7 +1,8 @@
 import React, { lazy, Suspense } from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
 import ProtectedRoute from './ProtectedRoute';
-import LoadingSpinner from '../components/ui/LoadingSpinner';
+import LoadingFallback from '../components/ui/LoadingFallback';
+import ErrorBoundary from '../components/ui/ErrorBoundary';
 
 const HomePage = lazy(() => import('../pages/HomePage'));
 const DiscoverPage = lazy(() => import('../pages/DiscoverPage'));
@@ -33,36 +34,146 @@ const DAOGovernancePage = lazy(() => import('../pages/DAOGovernancePage'));
 
 const AppRoutes = () => {
   return (
-    <Suspense fallback={<div className="flex justify-center items-center min-h-screen"><LoadingSpinner /></div>}>
+    <Suspense fallback={<LoadingFallback message="Loading page..." />}>
       <Routes>
-        <Route path="/" element={<HomePage />} />
-        <Route path="/discover" element={<DiscoverPage />} />
-        <Route path="/novel/:id" element={<NovelPage />} />
-        <Route path="/novel/:id/quiz" element={<QuizPage />} />
-        <Route path="/community" element={<CommunityPage />} />
-        <Route path="/login" element={<LoginForm />} />
-        <Route path="/signup" element={<SignupForm />} />
-        <Route path="/messages" element={<ProtectedRoute><MessagesPage /></ProtectedRoute>} />
-        <Route path="/notifications" element={<ProtectedRoute><NotificationsPage /></ProtectedRoute>} />
-        <Route path="/profile" element={<ProtectedRoute><ProfilePage /></ProtectedRoute>} />
-        <Route path="/publish" element={<ProtectedRoute><PublishPage /></ProtectedRoute>} />
-        <Route path="/web3" element={<ProtectedRoute><Web3DashboardPage /></ProtectedRoute>} />
+        <Route path="/" element={
+          <ErrorBoundary>
+            <HomePage />
+          </ErrorBoundary>
+        } />
+        <Route path="/discover" element={
+          <ErrorBoundary>
+            <DiscoverPage />
+          </ErrorBoundary>
+        } />
+        <Route path="/novel/:id" element={
+          <ErrorBoundary>
+            <NovelPage />
+          </ErrorBoundary>
+        } />
+        <Route path="/novel/:id/quiz" element={
+          <ErrorBoundary>
+            <QuizPage />
+          </ErrorBoundary>
+        } />
+        <Route path="/community" element={
+          <ErrorBoundary>
+            <CommunityPage />
+          </ErrorBoundary>
+        } />
+        <Route path="/login" element={
+          <ErrorBoundary>
+            <LoginForm />
+          </ErrorBoundary>
+        } />
+        <Route path="/signup" element={
+          <ErrorBoundary>
+            <SignupForm />
+          </ErrorBoundary>
+        } />
+        <Route path="/messages" element={
+          <ProtectedRoute>
+            <ErrorBoundary>
+              <MessagesPage />
+            </ErrorBoundary>
+          </ProtectedRoute>
+        } />
+        <Route path="/notifications" element={
+          <ProtectedRoute>
+            <ErrorBoundary>
+              <NotificationsPage />
+            </ErrorBoundary>
+          </ProtectedRoute>
+        } />
+        <Route path="/profile" element={
+          <ProtectedRoute>
+            <ErrorBoundary>
+              <ProfilePage />
+            </ErrorBoundary>
+          </ProtectedRoute>
+        } />
+        <Route path="/publish" element={
+          <ProtectedRoute>
+            <ErrorBoundary>
+              <PublishPage />
+            </ErrorBoundary>
+          </ProtectedRoute>
+        } />
+        <Route path="/web3" element={
+          <ProtectedRoute>
+            <ErrorBoundary>
+              <Web3DashboardPage />
+            </ErrorBoundary>
+          </ProtectedRoute>
+        } />
         
         {/* Footer pages */}
-        <Route path="/about" element={<AboutPage />} />
-        <Route path="/features" element={<FeaturesPage />} />
-        <Route path="/pricing" element={<PricingPage />} />
-        <Route path="/faq" element={<FAQPage />} />
-        <Route path="/writer-guidelines" element={<WriterGuidelinesPage />} />
-        <Route path="/community-rules" element={<CommunityRulesPage />} />
-        <Route path="/token-economy" element={<TokenEconomyPage />} />
-        <Route path="/help-center" element={<HelpCenterPage />} />
-        <Route path="/privacy-policy" element={<PrivacyPolicyPage />} />
-        <Route path="/terms-of-service" element={<TermsOfServicePage />} />
-        <Route path="/copyright" element={<CopyrightPage />} />
-        <Route path="/dao-governance" element={<DAOGovernancePage />} />
+        <Route path="/about" element={
+          <ErrorBoundary>
+            <AboutPage />
+          </ErrorBoundary>
+        } />
+        <Route path="/features" element={
+          <ErrorBoundary>
+            <FeaturesPage />
+          </ErrorBoundary>
+        } />
+        <Route path="/pricing" element={
+          <ErrorBoundary>
+            <PricingPage />
+          </ErrorBoundary>
+        } />
+        <Route path="/faq" element={
+          <ErrorBoundary>
+            <FAQPage />
+          </ErrorBoundary>
+        } />
+        <Route path="/writer-guidelines" element={
+          <ErrorBoundary>
+            <WriterGuidelinesPage />
+          </ErrorBoundary>
+        } />
+        <Route path="/community-rules" element={
+          <ErrorBoundary>
+            <CommunityRulesPage />
+          </ErrorBoundary>
+        } />
+        <Route path="/token-economy" element={
+          <ErrorBoundary>
+            <TokenEconomyPage />
+          </ErrorBoundary>
+        } />
+        <Route path="/help-center" element={
+          <ErrorBoundary>
+            <HelpCenterPage />
+          </ErrorBoundary>
+        } />
+        <Route path="/privacy-policy" element={
+          <ErrorBoundary>
+            <PrivacyPolicyPage />
+          </ErrorBoundary>
+        } />
+        <Route path="/terms-of-service" element={
+          <ErrorBoundary>
+            <TermsOfServicePage />
+          </ErrorBoundary>
+        } />
+        <Route path="/copyright" element={
+          <ErrorBoundary>
+            <CopyrightPage />
+          </ErrorBoundary>
+        } />
+        <Route path="/dao-governance" element={
+          <ErrorBoundary>
+            <DAOGovernancePage />
+          </ErrorBoundary>
+        } />
         
-        <Route path="/404" element={<NotFoundPage />} />
+        <Route path="/404" element={
+          <ErrorBoundary>
+            <NotFoundPage />
+          </ErrorBoundary>
+        } />
         <Route path="*" element={<Navigate to="/404" replace />} />
       </Routes>
     </Suspense>

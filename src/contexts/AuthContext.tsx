@@ -12,6 +12,7 @@ interface AuthContextType {
   signup: (email: string, password: string, username?: string) => Promise<void>;
   logout: () => Promise<void>;
   updateUser: (data: Partial<User>) => void;
+  refreshAuth: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -28,21 +29,89 @@ interface AuthProviderProps {
   children: ReactNode;
 }
 
+// Local storage keys for persistence
+const AUTH_STORAGE_KEY = 'taleverse_auth_state';
+const USER_STORAGE_KEY = 'taleverse_user_data';
+
 export default function AuthProvider({ children }: AuthProviderProps) {
   const [user, setUser] = useState<User | null>(null);
-  const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [isLoading, setIsLoading] = useState<boolean>(true);
   const [initialLoading, setInitialLoading] = useState<boolean>(true);
   const [connectionTested, setConnectionTested] = useState<boolean>(false);
   const [connectionWorking, setConnectionWorking] = useState<boolean>(false);
   const { addToast } = useToast();
 
+  // Persist user data to localStorage
+  const persistUserData = (userData: User | null) => {
+    try {
+      if (userData) {
+        localStorage.setItem(USER_STORAGE_KEY, JSON.stringify(userData));
+        localStorage.setItem(AUTH_STORAGE_KEY, 'authenticated');
+      } else {
+        localStorage.removeItem(USER_STORAGE_KEY);
+        localStorage.removeItem(AUTH_STORAGE_KEY);
+      }
+    } catch (error) {
+      console.warn('Failed to persist user data:', error);
+    }
+  };
+
+  // Load user data from localStorage
+  const loadPersistedUserData = (): User | null => {
+    try {
+      const authState = localStorage.getItem(AUTH_STORAGE_KEY);
+      const userData = localStorage.getItem(USER_STORAGE_KEY);
+      
+      if (authState === 'authenticated' && userData) {
+        return JSON.parse(userData);
+      }
+    } catch (error) {
+      console.warn('Failed to load persisted user data:', error);
+      // Clear corrupted data
+      localStorage.removeItem(USER_STORAGE_KEY);
+      localStorage.removeItem(AUTH_STORAGE_KEY);
+    }
+    return null;
+  };
+
+  // Refresh authentication state
+  const refreshAuth = async () => {
+    if (!connectionWorking) return;
+
+    try {
+      const { data: { session }, error } = await supabase.auth.getSession();
+      
+      if (error) {
+        console.error('Error refreshing session:', error);
+        return;
+      }
+
+      if (session?.user) {
+        await fetchUserProfile(session.user);
+      } else {
+        setUser(null);
+        persistUserData(null);
+      }
+    } catch (error) {
+      console.error('Error in refreshAuth:', error);
+    }
+  };
+
   useEffect(() => {
     let mounted = true;
+    let authSubscription: any = null;
 
-    // Test Supabase connection and initialize auth
+    // Initialize auth with persistence
     const initializeAuth = async () => {
       try {
-        console.log('Testing Supabase connection...');
+        console.log('Initializing auth...');
+        
+        // Load persisted user data immediately for faster UI
+        const persistedUser = loadPersistedUserData();
+        if (persistedUser && mounted) {
+          setUser(persistedUser);
+          setIsLoading(false);
+        }
         
         // Check if we have Supabase environment variables
         const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
@@ -54,6 +123,7 @@ export default function AuthProvider({ children }: AuthProviderProps) {
             setConnectionTested(true);
             setConnectionWorking(false);
             setInitialLoading(false);
+            setIsLoading(false);
           }
           return;
         }
@@ -69,6 +139,7 @@ export default function AuthProvider({ children }: AuthProviderProps) {
           console.warn('Supabase connection failed, running in demo mode');
           if (mounted) {
             setInitialLoading(false);
+            setIsLoading(false);
           }
           return;
         }
@@ -82,6 +153,7 @@ export default function AuthProvider({ children }: AuthProviderProps) {
           console.error('Error getting session:', error);
           if (mounted) {
             setInitialLoading(false);
+            setIsLoading(false);
           }
           return;
         }
@@ -91,52 +163,78 @@ export default function AuthProvider({ children }: AuthProviderProps) {
           await fetchUserProfile(session.user);
         } else {
           console.log('No existing session found');
+          if (mounted) {
+            setUser(null);
+            persistUserData(null);
+          }
         }
+
+        // Set up auth listener
+        const { data } = supabase.auth.onAuthStateChange(
+          async (event, session) => {
+            console.log('Auth state changed:', event, session?.user?.id);
+            
+            if (!mounted) return;
+            
+            if (event === 'SIGNED_IN' && session?.user) {
+              console.log('User signed in, fetching profile...');
+              setIsLoading(true);
+              await fetchUserProfile(session.user);
+              setIsLoading(false);
+            } else if (event === 'SIGNED_OUT') {
+              console.log('User signed out');
+              setUser(null);
+              persistUserData(null);
+              setIsLoading(false);
+            } else if (event === 'TOKEN_REFRESHED' && session?.user) {
+              console.log('Token refreshed, updating profile...');
+              await fetchUserProfile(session.user);
+            }
+          }
+        );
+        authSubscription = data.subscription;
+
       } catch (error) {
         console.error('Error initializing auth:', error);
         if (mounted) {
-          // Don't show error toast in production if it's just a connection issue
           console.warn('Running in demo mode due to connection issues');
         }
       } finally {
         if (mounted) {
           setInitialLoading(false);
+          setIsLoading(false);
         }
       }
     };
 
     initializeAuth();
 
-    // Set up auth listener only if we have a working connection
-    let subscription: any = null;
-    
-    if (connectionWorking) {
-      const { data } = supabase.auth.onAuthStateChange(
-        async (event, session) => {
-          console.log('Auth state changed:', event, session?.user?.id);
-          
-          if (!mounted) return;
-          
-          if (event === 'SIGNED_IN' && session?.user) {
-            console.log('User signed in, fetching profile...');
-            setIsLoading(true);
-            await fetchUserProfile(session.user);
-            setIsLoading(false);
-          } else if (event === 'SIGNED_OUT') {
-            console.log('User signed out');
-            setUser(null);
-            setIsLoading(false);
-          }
-        }
-      );
-      subscription = data.subscription;
-    }
+    // Handle page visibility changes
+    const handleVisibilityChange = () => {
+      if (!document.hidden && connectionWorking) {
+        console.log('Page became visible, refreshing auth...');
+        refreshAuth();
+      }
+    };
+
+    // Handle focus events
+    const handleFocus = () => {
+      if (connectionWorking) {
+        console.log('Window focused, refreshing auth...');
+        refreshAuth();
+      }
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    window.addEventListener('focus', handleFocus);
 
     return () => {
       mounted = false;
-      if (subscription) {
-        subscription.unsubscribe();
+      if (authSubscription) {
+        authSubscription.unsubscribe();
       }
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+      window.removeEventListener('focus', handleFocus);
     };
   }, [connectionWorking]);
 
@@ -190,12 +288,14 @@ export default function AuthProvider({ children }: AuthProviderProps) {
 
         console.log('New profile created and fetched:', newProfile);
         setUser(newProfile);
+        persistUserData(newProfile);
       } else if (error) {
         console.error('Error fetching profile:', error);
         throw error;
       } else {
         console.log('Profile fetched successfully:', data);
         setUser(data);
+        persistUserData(data);
       }
     } catch (error) {
       console.error('Error in fetchUserProfile:', error);
@@ -302,21 +402,17 @@ export default function AuthProvider({ children }: AuthProviderProps) {
   };
 
   const logout = async () => {
-    if (!connectionWorking) {
-      // If no connection, just clear local state
-      setUser(null);
-      addToast('Logged out', 'success');
-      return;
-    }
-
     setIsLoading(true);
     try {
       console.log('Attempting logout...');
       
-      const { error } = await supabase.auth.signOut();
-      if (error) throw error;
+      if (connectionWorking) {
+        const { error } = await supabase.auth.signOut();
+        if (error) throw error;
+      }
       
       setUser(null);
+      persistUserData(null);
       addToast('Successfully logged out', 'success');
       console.log('Logout successful');
     } catch (error: any) {
@@ -324,6 +420,7 @@ export default function AuthProvider({ children }: AuthProviderProps) {
       addToast('Failed to log out', 'error');
       // Even if logout fails, clear the local state
       setUser(null);
+      persistUserData(null);
     } finally {
       setIsLoading(false);
     }
@@ -334,6 +431,7 @@ export default function AuthProvider({ children }: AuthProviderProps) {
       const updatedUser = { ...user, ...data };
       console.log('Updating user:', updatedUser);
       setUser(updatedUser);
+      persistUserData(updatedUser);
     }
   };
 
@@ -378,7 +476,8 @@ export default function AuthProvider({ children }: AuthProviderProps) {
       login, 
       signup,
       logout, 
-      updateUser 
+      updateUser,
+      refreshAuth
     }}>
       {children}
     </AuthContext.Provider>

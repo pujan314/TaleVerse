@@ -6,11 +6,17 @@ import type { User, Novel, Chapter, Quiz, QuizResult } from '../lib/supabase';
 export const useProfile = () => {
   const [profile, setProfile] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
+    let mounted = true;
+
     const getProfile = async () => {
       try {
+        setError(null);
         const { data: { user } } = await supabase.auth.getUser();
+        
+        if (!mounted) return;
         
         if (user) {
           const { data, error } = await supabase
@@ -18,6 +24,8 @@ export const useProfile = () => {
             .select('*')
             .eq('id', user.id)
             .single();
+
+          if (!mounted) return;
 
           if (error && error.code === 'PGRST116') {
             // Profile doesn't exist, create one
@@ -37,25 +45,31 @@ export const useProfile = () => {
               .single();
 
             if (insertError) throw insertError;
-            setProfile(newProfile);
+            if (mounted) setProfile(newProfile);
           } else if (error) {
             throw error;
           } else {
-            setProfile(data);
+            if (mounted) setProfile(data);
           }
         }
-      } catch (error) {
+      } catch (error: any) {
         console.error('Error fetching profile:', error);
+        if (mounted) setError(error.message);
       } finally {
-        setLoading(false);
+        if (mounted) setLoading(false);
       }
     };
 
     getProfile();
+
+    return () => {
+      mounted = false;
+    };
   }, []);
 
   const updateProfile = async (updates: Partial<User>) => {
     try {
+      setError(null);
       const { data, error } = await supabase
         .from('profiles')
         .update(updates)
@@ -66,23 +80,26 @@ export const useProfile = () => {
       if (error) throw error;
       setProfile(data);
       return data;
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error updating profile:', error);
+      setError(error.message);
       throw error;
     }
   };
 
-  return { profile, loading, updateProfile };
+  return { profile, loading, error, updateProfile };
 };
 
 // Hook for managing novels
 export const useNovels = () => {
   const [novels, setNovels] = useState<Novel[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   const fetchNovels = async (filters?: { genre?: string; search?: string }) => {
     try {
       setLoading(true);
+      setError(null);
       
       // Check if Supabase is available
       const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
@@ -114,13 +131,15 @@ export const useNovels = () => {
 
       if (error) {
         console.error('Error fetching novels:', error);
+        setError(error.message);
         setNovels([]);
         return;
       }
       
       setNovels(data || []);
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error fetching novels:', error);
+      setError(error.message);
       setNovels([]);
     } finally {
       setLoading(false);
@@ -131,7 +150,7 @@ export const useNovels = () => {
     fetchNovels();
   }, []);
 
-  return { novels, loading, fetchNovels };
+  return { novels, loading, error, fetchNovels };
 };
 
 // Hook for managing a single novel with chapters
@@ -139,11 +158,15 @@ export const useNovel = (novelId: string) => {
   const [novel, setNovel] = useState<Novel | null>(null);
   const [chapters, setChapters] = useState<Chapter[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
+    let mounted = true;
+
     const fetchNovel = async () => {
       try {
         setLoading(true);
+        setError(null);
         console.log('Fetching novel with ID:', novelId);
         
         // Check if Supabase is available
@@ -154,8 +177,10 @@ export const useNovel = (novelId: string) => {
             supabaseUrl === 'your_supabase_project_url' || 
             supabaseKey === 'your_supabase_anon_key') {
           console.log('Supabase not configured, novel not available');
-          setNovel(null);
-          setChapters([]);
+          if (mounted) {
+            setNovel(null);
+            setChapters([]);
+          }
           return;
         }
         
@@ -169,13 +194,18 @@ export const useNovel = (novelId: string) => {
 
         if (novelError) {
           console.error('Error fetching novel:', novelError);
-          setNovel(null);
-          setChapters([]);
+          if (mounted) {
+            setError(novelError.message);
+            setNovel(null);
+            setChapters([]);
+          }
           return;
         }
         
-        console.log('Novel data:', novelData);
-        setNovel(novelData);
+        if (mounted) {
+          console.log('Novel data:', novelData);
+          setNovel(novelData);
+        }
 
         // Fetch chapters - try to get all chapters first, then fall back to preview only
         console.log('Fetching chapters for novel:', novelId);
@@ -199,41 +229,55 @@ export const useNovel = (novelId: string) => {
           
           if (previewError) {
             console.error('Error fetching preview chapters:', previewError);
-            setChapters([]);
+            if (mounted) {
+              setError(previewError.message);
+              setChapters([]);
+            }
           } else {
             console.log('Preview chapters:', previewChapters);
-            setChapters(previewChapters || []);
+            if (mounted) setChapters(previewChapters || []);
           }
         } else {
           console.log('All chapters data:', chaptersData);
-          setChapters(chaptersData || []);
+          if (mounted) setChapters(chaptersData || []);
         }
-      } catch (error) {
+      } catch (error: any) {
         console.error('Error fetching novel:', error);
-        setNovel(null);
-        setChapters([]);
+        if (mounted) {
+          setError(error.message);
+          setNovel(null);
+          setChapters([]);
+        }
       } finally {
-        setLoading(false);
+        if (mounted) setLoading(false);
       }
     };
 
     if (novelId) {
       fetchNovel();
     }
+
+    return () => {
+      mounted = false;
+    };
   }, [novelId]);
 
-  return { novel, chapters, loading };
+  return { novel, chapters, loading, error };
 };
 
 // Hook for managing quizzes
 export const useQuiz = (novelId: string) => {
   const [quiz, setQuiz] = useState<Quiz | null>(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
+    let mounted = true;
+
     const fetchQuiz = async () => {
       try {
         setLoading(true);
+        setError(null);
         
         // Check if Supabase is available
         const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
@@ -243,7 +287,7 @@ export const useQuiz = (novelId: string) => {
             supabaseUrl === 'your_supabase_project_url' || 
             supabaseKey === 'your_supabase_anon_key') {
           console.log('Supabase not configured, quiz not available');
-          setQuiz(null);
+          if (mounted) setQuiz(null);
           return;
         }
         
@@ -258,11 +302,14 @@ export const useQuiz = (novelId: string) => {
 
         if (quizError && quizError.code !== 'PGRST116') {
           console.error('Error fetching quiz:', quizError);
-          setQuiz(null);
+          if (mounted) {
+            setError(quizError.message);
+            setQuiz(null);
+          }
           return;
         }
         
-        if (quizData) {
+        if (quizData && mounted) {
           // Transform the data to match our expected format
           const transformedQuiz = {
             ...quizData,
@@ -275,21 +322,29 @@ export const useQuiz = (novelId: string) => {
           };
           setQuiz(transformedQuiz);
         }
-      } catch (error) {
+      } catch (error: any) {
         console.error('Error fetching quiz:', error);
-        setQuiz(null);
+        if (mounted) {
+          setError(error.message);
+          setQuiz(null);
+        }
       } finally {
-        setLoading(false);
+        if (mounted) setLoading(false);
       }
     };
 
     if (novelId) {
       fetchQuiz();
     }
+
+    return () => {
+      mounted = false;
+    };
   }, [novelId]);
 
   const submitQuizResult = async (result: Omit<QuizResult, 'id' | 'completed_at'>) => {
     try {
+      setError(null);
       const { data, error } = await supabase
         .from('quiz_results')
         .insert([result])
@@ -298,24 +353,29 @@ export const useQuiz = (novelId: string) => {
 
       if (error) throw error;
       return data;
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error submitting quiz result:', error);
+      setError(error.message);
       throw error;
     }
   };
 
-  return { quiz, loading, submitQuizResult };
+  return { quiz, loading, error, submitQuizResult };
 };
 
 // Hook for user library
 export const useUserLibrary = () => {
   const [library, setLibrary] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
+    let mounted = true;
+
     const fetchLibrary = async () => {
       try {
         setLoading(true);
+        setError(null);
         
         // Check if Supabase is available
         const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
@@ -325,7 +385,7 @@ export const useUserLibrary = () => {
             supabaseUrl === 'your_supabase_project_url' || 
             supabaseKey === 'your_supabase_anon_key') {
           console.log('Supabase not configured, library not available');
-          setLibrary([]);
+          if (mounted) setLibrary([]);
           return;
         }
         
@@ -339,24 +399,35 @@ export const useUserLibrary = () => {
 
         if (error) {
           console.error('Error fetching library:', error);
-          setLibrary([]);
+          if (mounted) {
+            setError(error.message);
+            setLibrary([]);
+          }
           return;
         }
         
-        setLibrary(data || []);
-      } catch (error) {
+        if (mounted) setLibrary(data || []);
+      } catch (error: any) {
         console.error('Error fetching library:', error);
-        setLibrary([]);
+        if (mounted) {
+          setError(error.message);
+          setLibrary([]);
+        }
       } finally {
-        setLoading(false);
+        if (mounted) setLoading(false);
       }
     };
 
     fetchLibrary();
+
+    return () => {
+      mounted = false;
+    };
   }, []);
 
   const addToLibrary = async (novelId: string) => {
     try {
+      setError(null);
       const { data, error } = await supabase
         .from('user_library')
         .insert([{ novel_id: novelId }])
@@ -365,11 +436,12 @@ export const useUserLibrary = () => {
 
       if (error) throw error;
       return data;
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error adding to library:', error);
+      setError(error.message);
       throw error;
     }
   };
 
-  return { library, loading, addToLibrary };
+  return { library, loading, error, addToLibrary };
 };
