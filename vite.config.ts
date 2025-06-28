@@ -11,6 +11,7 @@ export default defineConfig({
     headers: {
       'Cross-Origin-Opener-Policy': 'unsafe-none',
     },
+    historyApiFallback: true,
   },
   build: {
     outDir: 'dist',
