@@ -144,6 +144,7 @@ const NotificationDropdown = () => {
     }
   };
 
+  // Don't render if user is not available (prevents flash during auth refresh)
   if (!user) return null;
 
   return (

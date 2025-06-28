@@ -88,8 +88,8 @@ const Header = ({ toggleSidebar, darkMode, toggleDarkMode }: HeaderProps) => {
               {darkMode ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
             </button>
             
-            {/* Show loading state while auth is being determined */}
-            {isLoading ? (
+            {/* Show loading state only for initial auth check, not for tab focus */}
+            {isLoading && !user ? (
               <div className="animate-pulse">
                 <div className="h-8 w-20 bg-gray-200 dark:bg-gray-700 rounded"></div>
               </div>
