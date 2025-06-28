@@ -54,22 +54,27 @@ const mockFeaturedNovels = [
 ];
 
 const HomePage = () => {
-  const { isLoggedIn, user } = useAuth();
-  const { novels, loading } = useNovels();
+  const { isLoggedIn, user, isLoading: authLoading } = useAuth();
+  const { novels, loading: novelsLoading } = useNovels();
   const [featuredNovels, setFeaturedNovels] = useState<any[]>(mockFeaturedNovels);
+  const [hasInitialized, setHasInitialized] = useState(false);
 
   useEffect(() => {
-    if (novels.length > 0) {
+    if (novels.length > 0 && !hasInitialized) {
       // Get top 4 novels by rating
       const featured = novels
         .sort((a, b) => b.rating - a.rating)
         .slice(0, 4);
       setFeaturedNovels(featured);
+      setHasInitialized(true);
     }
     // If no novels from database, keep using mock data
-  }, [novels]);
+  }, [novels, hasInitialized]);
 
   const displayNovels = featuredNovels;
+
+  // Only show loading on initial page load, not on tab focus
+  const shouldShowLoading = novelsLoading && !hasInitialized && featuredNovels.length === 0;
 
   return (
     <div className="space-y-12">
@@ -167,7 +172,7 @@ const HomePage = () => {
           </Link>
         </div>
         
-        {loading ? (
+        {shouldShowLoading ? (
           <div className="flex justify-center py-8">
             <LoadingSpinner />
           </div>

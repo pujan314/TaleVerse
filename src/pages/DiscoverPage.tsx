@@ -92,6 +92,8 @@ const DiscoverPage = () => {
   const [selectedGenre, setSelectedGenre] = useState('All');
   const [searchQuery, setSearchQuery] = useState('');
   const { novels, loading, fetchNovels } = useNovels();
+  const [hasInitialized, setHasInitialized] = useState(false);
+  const [displayNovels, setDisplayNovels] = useState(mockNovels);
 
   // Check if database is connected
   const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
@@ -101,20 +103,28 @@ const DiscoverPage = () => {
     supabaseKey !== 'your_supabase_anon_key' &&
     !supabaseUrl.includes('placeholder');
 
-  // Use database novels if available, otherwise use mock data
-  const displayNovels = isDatabaseConnected && novels.length > 0 ? novels : mockNovels;
+  // Initialize display novels
+  useEffect(() => {
+    if (isDatabaseConnected && novels.length > 0 && !hasInitialized) {
+      setDisplayNovels(novels);
+      setHasInitialized(true);
+    } else if (!isDatabaseConnected) {
+      setDisplayNovels(mockNovels);
+      setHasInitialized(true);
+    }
+  }, [novels, isDatabaseConnected, hasInitialized]);
 
   useEffect(() => {
-    if (isDatabaseConnected) {
+    if (isDatabaseConnected && hasInitialized) {
       fetchNovels({ genre: selectedGenre, search: searchQuery });
     }
-  }, [selectedGenre, searchQuery, isDatabaseConnected]);
+  }, [selectedGenre, searchQuery, isDatabaseConnected, hasInitialized]);
 
   const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchQuery(e.target.value);
   };
 
-  // Filter mock data when not using database
+  // Filter novels based on current criteria
   const filteredNovels = isDatabaseConnected ? displayNovels : displayNovels.filter(novel => {
     const matchesGenre = selectedGenre === 'All' || novel.genre === selectedGenre;
     const matchesSearch = !searchQuery || 
@@ -124,13 +134,8 @@ const DiscoverPage = () => {
     return matchesGenre && matchesSearch;
   });
 
-  if (loading && isDatabaseConnected) {
-    return (
-      <div className="flex justify-center items-center min-h-screen">
-        <LoadingSpinner size="lg" />
-      </div>
-    );
-  }
+  // Only show loading on initial page load, not on tab focus
+  const shouldShowLoading = loading && !hasInitialized && displayNovels.length === 0;
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -219,7 +224,11 @@ const DiscoverPage = () => {
       </div>
 
       {/* Novels Grid */}
-      {filteredNovels.length > 0 ? (
+      {shouldShowLoading ? (
+        <div className="flex justify-center items-center min-h-[400px]">
+          <LoadingSpinner size="lg" />
+        </div>
+      ) : filteredNovels.length > 0 ? (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
           {filteredNovels.map((novel) => (
             <Link key={novel.id} to={`/novel/${novel.id}`} className="group">

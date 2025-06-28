@@ -93,10 +93,16 @@ export const useProfile = () => {
 // Hook for managing novels
 export const useNovels = () => {
   const [novels, setNovels] = useState<Novel[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false); // Start with false to prevent initial loading
   const [error, setError] = useState<string | null>(null);
+  const [hasInitialized, setHasInitialized] = useState(false);
 
   const fetchNovels = async (filters?: { genre?: string; search?: string }) => {
+    // Don't fetch if already initialized and no filters provided
+    if (hasInitialized && !filters) {
+      return;
+    }
+
     try {
       setLoading(true);
       setError(null);
@@ -110,6 +116,7 @@ export const useNovels = () => {
           supabaseKey === 'your_supabase_anon_key') {
         console.log('Supabase not configured, using empty novels list');
         setNovels([]);
+        setHasInitialized(true);
         return;
       }
 
@@ -137,6 +144,7 @@ export const useNovels = () => {
       }
       
       setNovels(data || []);
+      setHasInitialized(true);
     } catch (error: any) {
       console.error('Error fetching novels:', error);
       setError(error.message);
@@ -147,8 +155,11 @@ export const useNovels = () => {
   };
 
   useEffect(() => {
-    fetchNovels();
-  }, []);
+    // Only fetch on initial mount
+    if (!hasInitialized) {
+      fetchNovels();
+    }
+  }, [hasInitialized]);
 
   return { novels, loading, error, fetchNovels };
 };
