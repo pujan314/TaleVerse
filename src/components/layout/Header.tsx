@@ -41,6 +41,10 @@ const Header = ({ toggleSidebar, darkMode, toggleDarkMode }: HeaderProps) => {
 
   return (
     <header className="sticky top-0 z-30 bg-white dark:bg-gray-900 border-b border-[var(--border-color)] shadow-sm">
+      {/* Project Banner */}
+      <div className="bg-gradient-to-r from-primary-700 via-primary-600 to-accent-600 text-white text-center text-xs font-medium py-1.5 tracking-wide">
+        Product Development Class Project
+      </div>
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
           <div className="flex items-center">
