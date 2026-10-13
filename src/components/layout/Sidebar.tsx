@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Home, BookOpen, PenTool, Users, Trophy, BookMarked, MessageSquare, Wallet } from 'lucide-react';
+import { Home, BookOpen, PenTool, Users, MessageSquare, Wallet } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 import clsx from '../../utils/clsx';
 

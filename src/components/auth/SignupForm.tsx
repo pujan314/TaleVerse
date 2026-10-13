@@ -45,8 +45,8 @@ const SignupForm = () => {
       await signup(formData.email, formData.password, formData.username);
       // If signup is successful, navigate to login
       navigate('/login');
-    } catch (error: any) {
-      setError(error.message || 'Failed to create account');
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to create account');
     }
   };
 

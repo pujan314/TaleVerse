@@ -32,8 +32,8 @@ const LoginForm = () => {
       await login(formData.email.trim(), formData.password);
       // If login is successful, navigate to home
       navigate('/');
-    } catch (error: any) {
-      setError(error.message || 'Failed to log in');
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to log in');
     }
   };
 

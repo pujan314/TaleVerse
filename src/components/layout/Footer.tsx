@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { BookOpen, Github, Twitter, Instagram, Facebook, Youtube, Linkedin, MessageCircle, Zap } from 'lucide-react';
+import { BookOpen, Github, Twitter, Instagram, Youtube, MessageCircle, Zap } from 'lucide-react';
 
 const Footer = () => {
   const socialLinks = [

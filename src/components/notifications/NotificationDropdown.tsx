@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { Bell, X, Check, Clock, Award, BookOpen, Users, MessageCircle } from 'lucide-react';
+import { Bell, Check, Award, BookOpen, MessageCircle } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 import clsx from '../../utils/clsx';
 

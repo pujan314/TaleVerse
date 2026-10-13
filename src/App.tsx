@@ -12,7 +12,7 @@ import LoadingFallback from './components/ui/LoadingFallback';
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
-      retry: (failureCount, error: any) => {
+      retry: (failureCount: number, error: { status?: number }) => {
         // Don't retry on auth errors
         if (error?.status === 401 || error?.status === 403) {
           return false;

@@ -2,7 +2,6 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { Home, BookOpen, PenTool, Users, X, LogOut } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
-import clsx from '../../utils/clsx';
 
 interface MobileNavProps {
   open: boolean;
