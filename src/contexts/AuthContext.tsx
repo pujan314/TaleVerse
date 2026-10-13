@@ -103,7 +103,7 @@ export default function AuthProvider({ children }: AuthProviderProps) {
 
   useEffect(() => {
     let mounted = true;
-    let authSubscription: any = null;
+    let authSubscription: { unsubscribe: () => void } | null = null;
     let refreshTimeout: NodeJS.Timeout;
 
     // Initialize auth with persistence
@@ -249,6 +249,7 @@ export default function AuthProvider({ children }: AuthProviderProps) {
       document.removeEventListener('visibilitychange', handleVisibilityChange);
       window.removeEventListener('focus', handleFocus);
     };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [connectionWorking, isRefreshing]);
 
   const fetchUserProfile = async (authUser: SupabaseUser) => {
@@ -358,11 +359,11 @@ export default function AuthProvider({ children }: AuthProviderProps) {
       // Immediately fetch and set user profile
       await fetchUserProfile(data.user);
       
-    } catch (error: any) {
-      console.error('Login error:', error);
-      addToast(error.message || 'Failed to log in', 'error');
+    } catch (err) {
+      console.error('Login error:', err);
+      addToast(err instanceof Error ? err.message : 'Failed to log in', 'error');
       setIsLoading(false);
-      throw error;
+      throw err;
     } finally {
       setIsLoading(false);
     }
@@ -405,10 +406,10 @@ export default function AuthProvider({ children }: AuthProviderProps) {
       
       console.log('Signup successful:', data.user?.id);
       addToast('Account created successfully! You can now sign in.', 'success');
-    } catch (error: any) {
-      console.error('Signup error:', error);
-      addToast(error.message || 'Failed to create account', 'error');
-      throw error;
+    } catch (err) {
+      console.error('Signup error:', err);
+      addToast(err instanceof Error ? err.message : 'Failed to create account', 'error');
+      throw err;
     } finally {
       setIsLoading(false);
     }
@@ -428,8 +429,8 @@ export default function AuthProvider({ children }: AuthProviderProps) {
       persistUserData(null);
       addToast('Successfully logged out', 'success');
       console.log('Logout successful');
-    } catch (error: any) {
-      console.error('Logout error:', error);
+    } catch (err) {
+      console.error('Logout error:', err);
       addToast('Failed to log out', 'error');
       // Even if logout fails, clear the local state
       setUser(null);

@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useAuth } from '../contexts/AuthContext';
-import { MessageCircle, Search, Send, MoreVertical, Phone, Video, User, Star } from 'lucide-react';
+import { MessageCircle, Search, Send, MoreVertical, Phone, Video, User } from 'lucide-react';
 
 const MessagesPage = () => {
   const { user } = useAuth();

@@ -136,8 +136,8 @@ const PublishPage = () => {
 
       addToast('Draft saved successfully!', 'success');
       navigate(`/novel/${novel.id}`);
-    } catch (error: any) {
-      console.error('Error saving draft:', error);
+    } catch (err) {
+      console.error('Error saving draft:', err);
       addToast('Failed to save draft. Please try again.', 'error');
     } finally {
       setIsSaving(false);
@@ -219,8 +219,8 @@ const PublishPage = () => {
 
       addToast('Novel published successfully!', 'success');
       navigate(`/novel/${novel.id}`);
-    } catch (error: any) {
-      console.error('Error publishing novel:', error);
+    } catch (err) {
+      console.error('Error publishing novel:', err);
       addToast('Failed to publish novel. Please try again.', 'error');
     } finally {
       setIsPublishing(false);

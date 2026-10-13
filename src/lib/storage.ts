@@ -49,6 +49,7 @@ export class StorageService {
    * Upload file to Supabase Storage
    */
   static async uploadFile(file: File, userId: string, onProgress?: (progress: number) => void): Promise<UploadResult> {
+    void onProgress;
     try {
       // Validate file
       const validation = this.validateFile(file);
@@ -60,7 +61,7 @@ export class StorageService {
       const filePath = this.generateFilePath(file, userId);
 
       // Upload file
-      const { data, error } = await supabase.storage
+      const { error } = await supabase.storage
         .from(this.BUCKET_NAME)
         .upload(filePath, file, {
           cacheControl: '3600',
@@ -86,9 +87,9 @@ export class StorageService {
         path: filePath
       };
 
-    } catch (error: any) {
-      console.error('Upload error:', error);
-      return { url: '', path: '', error: error.message || 'Upload failed' };
+    } catch (err) {
+      console.error('Upload error:', err);
+      return { url: '', path: '', error: err instanceof Error ? err.message : 'Upload failed' };
     }
   }
 
@@ -107,9 +108,9 @@ export class StorageService {
       }
 
       return { success: true };
-    } catch (error: any) {
-      console.error('Delete error:', error);
-      return { success: false, error: error.message || 'Delete failed' };
+    } catch (err) {
+      console.error('Delete error:', err);
+      return { success: false, error: err instanceof Error ? err.message : 'Delete failed' };
     }
   }
 

@@ -4,6 +4,7 @@ import { ChevronLeft, ChevronRight, Bookmark, Share, MessageCircle, Heart, Award
 import { useAuth } from '../contexts/AuthContext';
 import { useToast } from '../components/ui/Toaster';
 import { useNovel, useUserLibrary } from '../hooks/useSupabase';
+import type { Chapter } from '../lib/supabase';
 import LoadingSpinner from '../components/ui/LoadingSpinner';
 
 const NovelPage = () => {
@@ -12,7 +13,7 @@ const NovelPage = () => {
   const { novel, chapters, loading } = useNovel(id!);
   const { addToLibrary } = useUserLibrary();
   const [currentChapterIndex, setCurrentChapterIndex] = useState(0);
-  const { isLoggedIn, user } = useAuth();
+  const { isLoggedIn } = useAuth();
   const { addToast } = useToast();
   const [isBookmarked, setIsBookmarked] = useState(false);
   const [isLiked, setIsLiked] = useState(false);
@@ -35,7 +36,7 @@ const NovelPage = () => {
       await addToLibrary(id!);
       setIsBookmarked(true);
       addToast('Novel added to your library', 'success');
-    } catch (error) {
+    } catch {
       addToast('Failed to add to library', 'error');
     }
   };
@@ -58,7 +59,7 @@ const NovelPage = () => {
           text: novel?.description,
           url: window.location.href,
         });
-      } catch (error) {
+      } catch {
         // User cancelled sharing
       }
     } else {
@@ -82,7 +83,7 @@ const NovelPage = () => {
     }
   };
 
-  const canReadChapter = (chapter: any) => {
+  const canReadChapter = (chapter: Chapter) => {
     if (!chapter) return false;
     
     // Preview chapters can always be read by anyone

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { BookOpen, Award, Users, Coins, TrendingUp, Star } from 'lucide-react';
+import { BookOpen, Award, Users, Coins, Star } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { useNovels } from '../hooks/useSupabase';
 import LoadingSpinner from '../components/ui/LoadingSpinner';
@@ -54,9 +54,9 @@ const mockFeaturedNovels = [
 ];
 
 const HomePage = () => {
-  const { isLoggedIn, user, isLoading: authLoading } = useAuth();
+  const { isLoggedIn, user } = useAuth();
   const { novels, loading: novelsLoading } = useNovels();
-  const [featuredNovels, setFeaturedNovels] = useState<any[]>(mockFeaturedNovels);
+  const [featuredNovels, setFeaturedNovels] = useState<typeof mockFeaturedNovels>(mockFeaturedNovels);
   const [hasInitialized, setHasInitialized] = useState(false);
 
   useEffect(() => {

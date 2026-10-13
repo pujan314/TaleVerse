@@ -90,9 +90,9 @@ export function useTokens() {
         args: [to as `0x${string}`, parseEther(amount.toString())],
       });
 
-    } catch (error: any) {
+    } catch (err) {
       addToast('Transfer failed', 'error');
-      console.error('Token transfer error:', error);
+      console.error('Token transfer error:', err);
       setIsTransferring(false);
     }
   };
@@ -116,7 +116,7 @@ export function useTokens() {
       updateUser({ tokens: user.tokens - price });
       addToast(`Content purchased for ${price} TALE tokens`, 'success');
       return true;
-    } catch (error) {
+    } catch {
       addToast('Purchase failed', 'error');
       return false;
     }
@@ -131,7 +131,7 @@ export function useTokens() {
       // For now, we'll update the database balance
       updateUser({ tokens: (user.tokens || 0) + amount });
       addToast(`Claimed ${amount} TALE tokens`, 'success');
-    } catch (error) {
+    } catch {
       addToast('Failed to claim rewards', 'error');
     }
   };
@@ -146,6 +146,7 @@ export function useTokens() {
 
   useEffect(() => {
     syncTokenBalance();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [blockchainBalance, user]);
 
   return {

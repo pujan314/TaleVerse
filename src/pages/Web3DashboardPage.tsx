@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 import { useAccount } from 'wagmi';
 import { Wallet, Coins, Award, TrendingUp, Send, Plus, ExternalLink } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
-import { useTokens } from '../hooks/useTokens';
 import { useNFTs } from '../hooks/useNFTs';
 import TokenBalance from '../components/web3/TokenBalance';
 import NFTGallery from '../components/web3/NFTGallery';
@@ -11,7 +10,6 @@ import WalletButton from '../components/web3/WalletButton';
 const Web3DashboardPage = () => {
   const { isConnected, address } = useAccount();
   const { user } = useAuth();
-  const { transferTokens, tipAuthor, claimRewards } = useTokens();
   const { nfts } = useNFTs();
   const [activeTab, setActiveTab] = useState<'overview' | 'tokens' | 'nfts' | 'transactions'>('overview');
 

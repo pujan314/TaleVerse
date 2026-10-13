@@ -52,9 +52,9 @@ export const useProfile = () => {
             if (mounted) setProfile(data);
           }
         }
-      } catch (error: any) {
-        console.error('Error fetching profile:', error);
-        if (mounted) setError(error.message);
+      } catch (err) {
+        console.error('Error fetching profile:', err);
+        if (mounted) setError(err instanceof Error ? err.message : 'Unknown error');
       } finally {
         if (mounted) setLoading(false);
       }
@@ -80,10 +80,10 @@ export const useProfile = () => {
       if (error) throw error;
       setProfile(data);
       return data;
-    } catch (error: any) {
-      console.error('Error updating profile:', error);
-      setError(error.message);
-      throw error;
+    } catch (err) {
+      console.error('Error updating profile:', err);
+      setError(err instanceof Error ? err.message : 'Unknown error');
+      throw err;
     }
   };
 
@@ -145,9 +145,9 @@ export const useNovels = () => {
       
       setNovels(data || []);
       setHasInitialized(true);
-    } catch (error: any) {
-      console.error('Error fetching novels:', error);
-      setError(error.message);
+    } catch (err) {
+      console.error('Error fetching novels:', err);
+      setError(err instanceof Error ? err.message : 'Unknown error');
       setNovels([]);
     } finally {
       setLoading(false);
@@ -159,6 +159,7 @@ export const useNovels = () => {
     if (!hasInitialized) {
       fetchNovels();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [hasInitialized]);
 
   return { novels, loading, error, fetchNovels };
@@ -222,7 +223,7 @@ export const useNovel = (novelId: string) => {
         console.log('Fetching chapters for novel:', novelId);
         
         // First, try to get all chapters (this will work for authenticated users)
-        let { data: chaptersData, error: chaptersError } = await supabase
+        const { data: chaptersData, error: chaptersError } = await supabase
           .from('chapters')
           .select('*')
           .eq('novel_id', novelId)
@@ -252,10 +253,10 @@ export const useNovel = (novelId: string) => {
           console.log('All chapters data:', chaptersData);
           if (mounted) setChapters(chaptersData || []);
         }
-      } catch (error: any) {
-        console.error('Error fetching novel:', error);
+      } catch (err) {
+        console.error('Error fetching novel:', err);
         if (mounted) {
-          setError(error.message);
+          setError(err instanceof Error ? err.message : 'Unknown error');
           setNovel(null);
           setChapters([]);
         }
@@ -324,7 +325,7 @@ export const useQuiz = (novelId: string) => {
           // Transform the data to match our expected format
           const transformedQuiz = {
             ...quizData,
-            questions: quizData.quiz_questions.map((q: any) => ({
+            questions: quizData.quiz_questions.map((q: { id: string; question_text: string; options: string[]; correct_answer_index: number }) => ({
               id: q.id,
               text: q.question_text,
               options: q.options,
@@ -333,10 +334,10 @@ export const useQuiz = (novelId: string) => {
           };
           setQuiz(transformedQuiz);
         }
-      } catch (error: any) {
-        console.error('Error fetching quiz:', error);
+      } catch (err) {
+        console.error('Error fetching quiz:', err);
         if (mounted) {
-          setError(error.message);
+          setError(err instanceof Error ? err.message : 'Unknown error');
           setQuiz(null);
         }
       } finally {
@@ -364,10 +365,10 @@ export const useQuiz = (novelId: string) => {
 
       if (error) throw error;
       return data;
-    } catch (error: any) {
-      console.error('Error submitting quiz result:', error);
-      setError(error.message);
-      throw error;
+    } catch (err) {
+      console.error('Error submitting quiz result:', err);
+      setError(err instanceof Error ? err.message : 'Unknown error');
+      throw err;
     }
   };
 
@@ -376,7 +377,7 @@ export const useQuiz = (novelId: string) => {
 
 // Hook for user library
 export const useUserLibrary = () => {
-  const [library, setLibrary] = useState<any[]>([]);
+  const [library, setLibrary] = useState<{ id: string; novel_id: string; progress: number; novels: Novel | null }[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -418,10 +419,10 @@ export const useUserLibrary = () => {
         }
         
         if (mounted) setLibrary(data || []);
-      } catch (error: any) {
-        console.error('Error fetching library:', error);
+      } catch (err) {
+        console.error('Error fetching library:', err);
         if (mounted) {
-          setError(error.message);
+          setError(err instanceof Error ? err.message : 'Unknown error');
           setLibrary([]);
         }
       } finally {
@@ -447,10 +448,10 @@ export const useUserLibrary = () => {
 
       if (error) throw error;
       return data;
-    } catch (error: any) {
-      console.error('Error adding to library:', error);
-      setError(error.message);
-      throw error;
+    } catch (err) {
+      console.error('Error adding to library:', err);
+      setError(err instanceof Error ? err.message : 'Unknown error');
+      throw err;
     }
   };
 

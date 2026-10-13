@@ -5,7 +5,7 @@ import { useToast } from '../components/ui/Toaster';
 
 export function useWallet() {
   const { address, isConnected, isConnecting } = useAccount();
-  const { connect, connectors } = useConnect();
+  const { connectors } = useConnect();
   const { disconnect } = useDisconnect();
   const { openConnectModal } = useConnectModal();
   const { user, updateUser } = useAuth();
@@ -20,9 +20,9 @@ export function useWallet() {
       if (openConnectModal) {
         openConnectModal();
       }
-    } catch (error: any) {
+    } catch (err) {
       addToast('Failed to connect wallet', 'error');
-      console.error('Wallet connection error:', error);
+      console.error('Wallet connection error:', err);
     }
   };
 
@@ -30,9 +30,9 @@ export function useWallet() {
     try {
       disconnect();
       addToast('Wallet disconnected', 'success');
-    } catch (error: any) {
+    } catch (err) {
       addToast('Failed to disconnect wallet', 'error');
-      console.error('Wallet disconnection error:', error);
+      console.error('Wallet disconnection error:', err);
     }
   };
 
@@ -47,9 +47,9 @@ export function useWallet() {
         wallet_connected: true 
       });
       addToast('Wallet linked to profile', 'success');
-    } catch (error: any) {
+    } catch (err) {
       addToast('Failed to link wallet', 'error');
-      console.error('Wallet linking error:', error);
+      console.error('Wallet linking error:', err);
     }
   };
 

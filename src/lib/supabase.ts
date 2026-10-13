@@ -37,7 +37,7 @@ export const testConnection = async (): Promise<boolean> => {
     const timeoutId = setTimeout(() => controller.abort(), 15000);
     
     try {
-      const { data, error } = await supabase
+      const { error } = await supabase
         .from('profiles')
         .select('count')
         .limit(0)
@@ -61,21 +61,22 @@ export const testConnection = async (): Promise<boolean> => {
       
       console.log('Supabase connection successful');
       return true;
-    } catch (fetchError: any) {
+    } catch (fetchError) {
       clearTimeout(timeoutId);
-      if (fetchError.name === 'AbortError') {
+      if (fetchError instanceof Error && fetchError.name === 'AbortError') {
         console.error('Supabase connection timeout after 15 seconds');
         return false;
       }
       throw fetchError;
     }
-  } catch (error: any) {
-    console.error('Supabase connection failed:', error.message || error);
+  } catch (error) {
+    console.error('Supabase connection failed:', error instanceof Error ? error.message : error);
     
     // Provide helpful error messages
-    if (error.message?.includes('fetch')) {
+    const errMsg = error instanceof Error ? error.message : '';
+    if (errMsg.includes('fetch')) {
       console.error('Network error - check if Supabase URL is correct and accessible');
-    } else if (error.message?.includes('Invalid API key')) {
+    } else if (errMsg.includes('Invalid API key')) {
       console.error('Invalid API key - check if VITE_SUPABASE_ANON_KEY is correct');
     }
     

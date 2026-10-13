@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Users, MessageCircle, Award, Bookmark, Heart, Share, Search, Twitter, Instagram, Youtube } from 'lucide-react';
+import { Users, MessageCircle, Bookmark, Heart, Share, Search, Twitter, Instagram, Youtube } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 
 const CommunityPage = () => {

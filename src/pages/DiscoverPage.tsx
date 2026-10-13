@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { Search, Filter, BookOpen, Star, Clock, User, Database, ExternalLink } from 'lucide-react';
+import { Search, Filter, BookOpen, Star, Database, ExternalLink } from 'lucide-react';
 import { useNovels } from '../hooks/useSupabase';
 import LoadingSpinner from '../components/ui/LoadingSpinner';
 import clsx from '../utils/clsx';
@@ -118,6 +118,7 @@ const DiscoverPage = () => {
     if (isDatabaseConnected && hasInitialized) {
       fetchNovels({ genre: selectedGenre, search: searchQuery });
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedGenre, searchQuery, isDatabaseConnected, hasInitialized]);
 
   const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {

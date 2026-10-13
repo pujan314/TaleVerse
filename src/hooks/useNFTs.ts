@@ -186,6 +186,7 @@ export function useNFTs() {
 
   useEffect(() => {
     loadUserNFTs();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user?.nfts]);
 
   return {

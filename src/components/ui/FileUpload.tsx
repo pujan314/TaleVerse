@@ -94,9 +94,9 @@ const FileUpload: React.FC<FileUploadProps> = ({
       onUploadComplete(result.url, result.path);
       addToast('File uploaded successfully!', 'success');
 
-    } catch (error: any) {
-      console.error('Upload error:', error);
-      const errorMessage = error.message || 'Upload failed. Please try again.';
+    } catch (err) {
+      console.error('Upload error:', err);
+      const errorMessage = err instanceof Error ? err.message : 'Upload failed. Please try again.';
       
       setUploadState(prev => ({
         ...prev,

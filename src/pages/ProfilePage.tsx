@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { useProfile, useUserLibrary } from '../hooks/useSupabase';
-import { BookOpen, Heart, Award, Coins, Settings, BookMarked, PenTool, Star, Clock, User } from 'lucide-react';
+import { BookOpen, Award, Coins, Settings, BookMarked, Star, Clock, User } from 'lucide-react';
 import LoadingSpinner from '../components/ui/LoadingSpinner';
 
 const ProfilePage = () => {

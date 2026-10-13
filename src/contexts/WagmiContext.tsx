@@ -1,7 +1,6 @@
 import React, { ReactNode } from 'react';
 import { createConfig, http } from 'wagmi';
 import { mainnet, polygon, optimism, arbitrum } from 'wagmi/chains';
-import { QueryClient } from '@tanstack/react-query';
 import { WagmiProvider as WagmiProviderCore } from 'wagmi';
 
 const config = createConfig({

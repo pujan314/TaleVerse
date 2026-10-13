@@ -1,4 +1,4 @@
-import React, { useState, useEffect, createContext, useContext, ReactNode } from 'react';
+import React, { useState, createContext, useContext, ReactNode } from 'react';
 import { X, CheckCircle, AlertCircle, Info } from 'lucide-react';
 import clsx from '../../utils/clsx';
 

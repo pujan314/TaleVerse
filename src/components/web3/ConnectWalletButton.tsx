@@ -1,11 +1,9 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { useAccount } from 'wagmi';
 import WalletButton from './WalletButton';
 import { useAuth } from '../../contexts/AuthContext';
 
 const ConnectWalletButton = () => {
-  const { isConnected } = useAccount();
   const { isLoggedIn } = useAuth();
 
   // If user is logged in, show wallet connection
