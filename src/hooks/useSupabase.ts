@@ -261,11 +261,13 @@ export const useNovel = (novelId: string) => {
           if (mounted) setChapters(chaptersData || []);
         }
       } catch (err) {
-        console.error('Error fetching novel:', err);
+        console.error('Error fetching novel, falling back to mock:', err);
         if (mounted) {
-          setError(err instanceof Error ? err.message : 'Unknown error');
-          setNovel(null);
-          setChapters([]);
+          const mockNovel = mockNovels.find(n => n.id === novelId);
+          const mockChap = mockChapters[novelId] || [];
+          setNovel(mockNovel || null);
+          setChapters(mockChap);
+          if (!mockNovel) setError(err instanceof Error ? err.message : 'Unknown error');
         }
       } finally {
         if (mounted) setLoading(false);
@@ -321,7 +323,7 @@ export const useQuiz = (novelId: string) => {
           .eq('novel_id', novelId)
           .single();
 
-        if (quizError && quizError.code !== 'PGRST116') {
+        if (quizError) {
           console.error('Error fetching quiz, falling back to mock:', quizError);
           const mockQuiz = mockQuizzes[novelId] || null;
           if (mounted) setQuiz(mockQuiz);
@@ -340,12 +342,17 @@ export const useQuiz = (novelId: string) => {
             }))
           };
           setQuiz(transformedQuiz);
+        } else if (mounted) {
+          // No quiz found in database, try mock
+          const mockQuiz = mockQuizzes[novelId] || null;
+          setQuiz(mockQuiz);
         }
       } catch (err) {
-        console.error('Error fetching quiz:', err);
+        console.error('Error fetching quiz, falling back to mock:', err);
         if (mounted) {
-          setError(err instanceof Error ? err.message : 'Unknown error');
-          setQuiz(null);
+          const mockQuiz = mockQuizzes[novelId] || null;
+          setQuiz(mockQuiz);
+          if (!mockQuiz) setError(err instanceof Error ? err.message : 'Unknown error');
         }
       } finally {
         if (mounted) setLoading(false);
