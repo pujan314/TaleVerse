@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '../lib/supabase';
 import type { User, Novel, Chapter, Quiz, QuizResult } from '../lib/supabase';
+import { mockNovels, mockChapters, mockQuizzes } from '../data/mockNovels';
 
 // Hook for managing user profile
 export const useProfile = () => {
@@ -113,9 +114,10 @@ export const useNovels = () => {
       
       if (!supabaseUrl || !supabaseKey || 
           supabaseUrl === 'your_supabase_project_url' || 
-          supabaseKey === 'your_supabase_anon_key') {
-        console.log('Supabase not configured, using empty novels list');
-        setNovels([]);
+          supabaseKey === 'your_supabase_anon_key' ||
+          supabaseUrl.includes('placeholder')) {
+        console.log('Supabase not configured, using mock novels');
+        setNovels(mockNovels);
         setHasInitialized(true);
         return;
       }
@@ -137,9 +139,10 @@ export const useNovels = () => {
       const { data, error } = await query;
 
       if (error) {
-        console.error('Error fetching novels:', error);
+        console.error('Error fetching novels, using mock data:', error);
         setError(error.message);
-        setNovels([]);
+        setNovels(mockNovels);
+        setHasInitialized(true);
         return;
       }
       
@@ -187,11 +190,14 @@ export const useNovel = (novelId: string) => {
         
         if (!supabaseUrl || !supabaseKey || 
             supabaseUrl === 'your_supabase_project_url' || 
-            supabaseKey === 'your_supabase_anon_key') {
-          console.log('Supabase not configured, novel not available');
+            supabaseKey === 'your_supabase_anon_key' ||
+            supabaseUrl.includes('placeholder')) {
+          console.log('Supabase not configured, using mock data for novel');
+          const mockNovel = mockNovels.find(n => n.id === novelId);
+          const mockChap = mockChapters[novelId] || [];
           if (mounted) {
-            setNovel(null);
-            setChapters([]);
+            setNovel(mockNovel || null);
+            setChapters(mockChap);
           }
           return;
         }
@@ -205,11 +211,12 @@ export const useNovel = (novelId: string) => {
           .single();
 
         if (novelError) {
-          console.error('Error fetching novel:', novelError);
+          console.error('Error fetching novel, falling back to mock:', novelError);
+          const mockNovel = mockNovels.find(n => n.id === novelId);
+          const mockChap = mockChapters[novelId] || [];
           if (mounted) {
-            setError(novelError.message);
-            setNovel(null);
-            setChapters([]);
+            setNovel(mockNovel || null);
+            setChapters(mockChap);
           }
           return;
         }
@@ -297,9 +304,11 @@ export const useQuiz = (novelId: string) => {
         
         if (!supabaseUrl || !supabaseKey || 
             supabaseUrl === 'your_supabase_project_url' || 
-            supabaseKey === 'your_supabase_anon_key') {
-          console.log('Supabase not configured, quiz not available');
-          if (mounted) setQuiz(null);
+            supabaseKey === 'your_supabase_anon_key' ||
+            supabaseUrl.includes('placeholder')) {
+          console.log('Supabase not configured, using mock quiz');
+          const mockQuiz = mockQuizzes[novelId] || null;
+          if (mounted) setQuiz(mockQuiz);
           return;
         }
         
@@ -313,11 +322,9 @@ export const useQuiz = (novelId: string) => {
           .single();
 
         if (quizError && quizError.code !== 'PGRST116') {
-          console.error('Error fetching quiz:', quizError);
-          if (mounted) {
-            setError(quizError.message);
-            setQuiz(null);
-          }
+          console.error('Error fetching quiz, falling back to mock:', quizError);
+          const mockQuiz = mockQuizzes[novelId] || null;
+          if (mounted) setQuiz(mockQuiz);
           return;
         }
         

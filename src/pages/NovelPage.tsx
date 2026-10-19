@@ -340,7 +340,7 @@ const NovelPage = () => {
             <div className="space-y-3">
               {!isLoggedIn ? (
                 <>
-                  <Link to="/signup\" className="btn-primary w-full">
+                  <Link to="/signup" className="btn-primary w-full">
                     Create Account
                   </Link>
                   <Link to="/login" className="btn-secondary w-full">

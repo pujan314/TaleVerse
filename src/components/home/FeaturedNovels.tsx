@@ -1,52 +1,20 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { Star, BookOpen, Clock } from 'lucide-react';
-
-// Mock data for featured novels
-const featuredNovels = [
-  {
-    id: '1',
-    title: 'The Ethereum Chronicles',
-    author: 'Alex Blockman',
-    coverImage: 'https://images.pexels.com/photos/1646870/pexels-photo-1646870.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2',
-    genre: 'Sci-Fi',
-    rating: 4.8,
-    readTime: 240, // minutes
-    description: 'A thrilling adventure through a digital world where code is law and decentralized societies thrive.'
-  },
-  {
-    id: '2',
-    title: 'Whispers of the Blockchain',
-    author: 'Maya Satoshi',
-    coverImage: 'https://images.pexels.com/photos/5691622/pexels-photo-5691622.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2',
-    genre: 'Mystery',
-    rating: 4.5,
-    readTime: 180,
-    description: 'A detective story set in 2040 where crimes leave traces on an immutable ledger.'
-  },
-  {
-    id: '3',
-    title: 'Love in the Age of Smart Contracts',
-    author: 'Sophia Merkle',
-    coverImage: 'https://images.pexels.com/photos/9638689/pexels-photo-9638689.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2',
-    genre: 'Romance',
-    rating: 4.7,
-    readTime: 210,
-    description: 'When two engineers fall in love, they discover that relationships are more complex than any algorithm.'
-  },
-  {
-    id: '4',
-    title: 'The Last Validator',
-    author: 'James Buterin',
-    coverImage: 'https://images.pexels.com/photos/7034127/pexels-photo-7034127.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2',
-    genre: 'Fantasy',
-    rating: 4.9,
-    readTime: 300,
-    description: 'In a world where computation is scarce, one person holds the key to validating the final block.'
-  }
-];
+import { mockNovels } from '../../data/mockNovels';
 
 const FeaturedNovels = () => {
+  const featuredNovels = mockNovels.slice(0, 4).map(n => ({
+    id: n.id,
+    title: n.title,
+    author: n.author_name,
+    coverImage: n.cover_image || '',
+    genre: n.genre,
+    rating: n.rating,
+    readTime: (n.total_chapters || 1) * 30,
+    description: n.description,
+  }));
+
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
       {featuredNovels.map((novel) => (
