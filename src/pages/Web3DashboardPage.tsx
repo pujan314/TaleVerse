@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useAccount } from 'wagmi';
 import { Wallet, Coins, Award, TrendingUp, Send, Plus, ExternalLink } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
@@ -12,6 +13,7 @@ const Web3DashboardPage = () => {
   const { user } = useAuth();
   const { nfts } = useNFTs();
   const [activeTab, setActiveTab] = useState<'overview' | 'tokens' | 'nfts' | 'transactions'>('overview');
+  const navigate = useNavigate();
 
   if (!user) {
     return (
@@ -146,7 +148,7 @@ const Web3DashboardPage = () => {
                 <Send className="h-4 w-4" />
                 <span>Send Tokens</span>
               </button>
-              <button className="btn-secondary flex items-center justify-center space-x-2">
+              <button className="btn-secondary flex items-center justify-center space-x-2" onClick={() => navigate('/store')}>
                 <Plus className="h-4 w-4" />
                 <span>Buy Tokens</span>
               </button>

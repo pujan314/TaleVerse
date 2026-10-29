@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { Home, BookOpen, PenTool, Users, X, LogOut } from 'lucide-react';
+import { Home, BookOpen, PenTool, Users, X, LogOut, ShoppingBag } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 
 interface MobileNavProps {
@@ -84,6 +84,15 @@ const MobileNav = ({ open, setOpen }: MobileNavProps) => {
               >
                 <Users className="text-gray-500 dark:text-gray-400 mr-4 h-6 w-6" />
                 Community
+              </Link>
+
+              <Link
+                to="/store"
+                className="text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 group flex items-center px-3 py-2 text-base font-medium rounded-md"
+                onClick={() => setOpen(false)}
+              >
+                <ShoppingBag className="text-gray-500 dark:text-gray-400 mr-4 h-6 w-6" />
+                Store
               </Link>
             </nav>
           </div>

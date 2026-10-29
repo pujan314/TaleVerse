@@ -26,6 +26,7 @@ const FAQPage = lazy(() => import('../pages/FAQPage'));
 const WriterGuidelinesPage = lazy(() => import('../pages/WriterGuidelinesPage'));
 const CommunityRulesPage = lazy(() => import('../pages/CommunityRulesPage'));
 const TokenEconomyPage = lazy(() => import('../pages/TokenEconomyPage'));
+const StorePage = lazy(() => import('../pages/StorePage'));
 const HelpCenterPage = lazy(() => import('../pages/HelpCenterPage'));
 const PrivacyPolicyPage = lazy(() => import('../pages/PrivacyPolicyPage'));
 const TermsOfServicePage = lazy(() => import('../pages/TermsOfServicePage'));
@@ -141,6 +142,11 @@ const AppRoutes = () => {
         <Route path="/token-economy" element={
           <ErrorBoundary>
             <TokenEconomyPage />
+          </ErrorBoundary>
+        } />
+        <Route path="/store" element={
+          <ErrorBoundary>
+            <StorePage />
           </ErrorBoundary>
         } />
         <Route path="/help-center" element={

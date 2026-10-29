@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Home, BookOpen, PenTool, Users, MessageSquare, Wallet } from 'lucide-react';
+import { Home, BookOpen, PenTool, Users, MessageSquare, Wallet, ShoppingBag } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 import clsx from '../../utils/clsx';
 
@@ -18,6 +18,7 @@ const Sidebar = ({ open }: SidebarProps) => {
     { name: 'Publish', href: '/publish', icon: PenTool, requireAuth: true },
    
     { name: 'Community', href: '/community', icon: Users },
+    { name: 'Store', href: '/store', icon: ShoppingBag },
         
     { name: 'Messages', href: '/messages', icon: MessageSquare, requireAuth: true },
     { name: 'Web3 Dashboard', href: '/web3', icon: Wallet, requireAuth: true },
